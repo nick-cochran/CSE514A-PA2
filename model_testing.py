@@ -3,6 +3,8 @@ from sklearn import svm
 # from sklearn.neighbors import NearestNeighbors
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
+from sklearn.metrics import f1_score
+from sklearn.metrics import accuracy_score
 import pandas as pd
 import numpy as np
 
@@ -48,7 +50,9 @@ CX_train, CX_test, Cy_train, Cy_test = train_test_split(C_features, C_target, te
 
 
 # Create the model
-model = svm.SVC() # SVM hyperparameter value can be the kernel type
+SVM_rbf = svm.SVC(kernel='rbf') # SVM hyperparameter value can be the kernel type
+SVM_lin = svm.SVC(kernel='linear')
+SVM_sig = svm.SVC(kernel='sigmoid')
 # model.fit(X_train, y_train)
 # print(model.score(X_test, y_test))
 
@@ -56,12 +60,26 @@ kf = KFold(n_splits=5)
 for train_index, test_index in kf.split(X_training): # idk what this does but copilot suggested it
     X_train, X_test = features.iloc[train_index], features.iloc[test_index]
     y_train, y_test = target.iloc[train_index], target.iloc[test_index]
-    model.fit(X_train, y_train)
-    y_prediction = model.predict(X_test)
-    for i in range(len(y_prediction)):
-        print(y_prediction[i], y_test.iloc[i])
+    SVM_rbf.fit(X_train, y_train)
+    y_prediction_rbf = SVM_rbf.predict(X_test)
+    # for i in range(len(y_prediction)):
+    #     print(y_prediction[i], y_test.iloc[i])
+    # print('\n')
+    print("SVM rbf f1 score:", f1_score(y_test, y_prediction_rbf))
+    print("SVM rbf accuracy score:", accuracy_score(y_test, y_prediction_rbf))
+    # print('\n')
+    # print(SVM_rbf.score(X_test, y_test))
+
+    SVM_lin.fit(X_train, y_train)
+    y_prediction_lin = SVM_lin.predict(X_test)
+    print("SVM linear f1 score:", f1_score(y_test, y_prediction_lin))
+    print("SVM linear accuracy score:", accuracy_score(y_test, y_prediction_lin))
+
+    SVM_sig.fit(X_train, y_train)
+    y_prediction_sig = SVM_sig.predict(X_test)
+    print("SVM sigmoid f1 score:", f1_score(y_test, y_prediction_sig))
+    print("SVM sigmoid accuracy score:", accuracy_score(y_test, y_prediction_sig))
     print('\n')
-    print(model.score(X_test, y_test))
 
 # Are we allowed to use scikit learn for CV given this in the instructions:
 # "Write code that will run 5- or 10-fold cross-validation for testing hyperparameter values."
