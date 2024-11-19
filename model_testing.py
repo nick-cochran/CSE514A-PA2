@@ -1,6 +1,7 @@
 from numpy.random import sample
 from sklearn import svm
-# from sklearn.neighbors import NearestNeighbors
+from sklearn.neighbors import NearestNeighbors
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
 from sklearn.metrics import f1_score
@@ -12,9 +13,9 @@ import numpy as np
 populations = pd.read_csv('Modified_Populations.csv')
 populations = populations[populations['Month Groups'] != "Unknown month"]
 
-population_A = populations[populations['Month Groups'] == '1']
-population_B = populations[populations['Month Groups'] == '2']
-population_C = populations[populations['Month Groups'] == '3']
+population_A = populations[populations['Month Groups'] == 1]
+population_B = populations[populations['Month Groups'] == 2]
+population_C = populations[populations['Month Groups'] == 3]
 
 A_train, A_test = train_test_split(population_A, test_size=0.1, random_state=42)
 B_train, B_test = train_test_split(population_B, test_size=0.1, random_state=42)
@@ -50,39 +51,69 @@ CX_train, CX_test, Cy_train, Cy_test = train_test_split(C_features, C_target, te
 
 
 # Create the model
-SVM_rbf = svm.SVC(kernel='rbf') # SVM hyperparameter value can be the kernel type
-SVM_lin = svm.SVC(kernel='linear')
-SVM_sig = svm.SVC(kernel='sigmoid')
+SVM_lin = svm.SVC(kernel='linear') # SVM hyperparameter value is the kernel type
+SVM_poly = svm.SVC(kernel='poly')
+SVM_rbf = svm.SVC(kernel='rbf')
 # model.fit(X_train, y_train)
 # print(model.score(X_test, y_test))
 
-kf = KFold(n_splits=5)
-for train_index, test_index in kf.split(X_training): # idk what this does but copilot suggested it
+# kf_svm = KFold(n_splits=5)
+# count = 0
+# print("CV for SVMs\n")
+# for train_index, test_index in kf_svm.split(X_training): # idk what this does but copilot suggested it
+#     X_train, X_test = features.iloc[train_index], features.iloc[test_index]
+#     y_train, y_test = target.iloc[train_index], target.iloc[test_index]
+#
+#     print("Fold: ", count)
+#     count += 1
+#
+#     SVM_lin.fit(X_train, y_train)
+#     y_prediction_lin = SVM_lin.predict(X_test)
+#     print("SVM linear f1 score:", f1_score(y_test, y_prediction_lin))
+#     print("SVM linear accuracy score:", accuracy_score(y_test, y_prediction_lin))
+#
+#     SVM_poly.fit(X_train, y_train)
+#     y_prediction_poly = SVM_poly.predict(X_test)
+#     print("SVM polynomial f1 score:", f1_score(y_test, y_prediction_poly))
+#     print("SVM polynomial accuracy score:", accuracy_score(y_test, y_prediction_poly))
+#
+#     SVM_rbf.fit(X_train, y_train)
+#     y_prediction_rbf = SVM_rbf.predict(X_test)
+#     print("SVM RBF f1 score:", f1_score(y_test, y_prediction_rbf))
+#     print("SVM RBF accuracy score:", accuracy_score(y_test, y_prediction_rbf))
+#
+#     # for i in range(len(y_prediction)):
+#     #     print(y_prediction[i], y_test.iloc[i])
+#     # print('\n')
+#     print('\n')
+
+
+
+
+kNNs = [KNeighborsClassifier(n_neighbors=3), KNeighborsClassifier(n_neighbors=5), KNeighborsClassifier(n_neighbors=7),
+        KNeighborsClassifier(n_neighbors=9), KNeighborsClassifier(n_neighbors=11)]
+
+
+kf_knn = KFold(n_splits=5)
+count_knn = 0
+print("CV for SVMs\n")
+for train_index, test_index in kf_knn.split(X_training):
     X_train, X_test = features.iloc[train_index], features.iloc[test_index]
     y_train, y_test = target.iloc[train_index], target.iloc[test_index]
-    SVM_rbf.fit(X_train, y_train)
-    y_prediction_rbf = SVM_rbf.predict(X_test)
-    # for i in range(len(y_prediction)):
-    #     print(y_prediction[i], y_test.iloc[i])
-    # print('\n')
-    print("SVM rbf f1 score:", f1_score(y_test, y_prediction_rbf))
-    print("SVM rbf accuracy score:", accuracy_score(y_test, y_prediction_rbf))
-    # print('\n')
-    # print(SVM_rbf.score(X_test, y_test))
 
-    SVM_lin.fit(X_train, y_train)
-    y_prediction_lin = SVM_lin.predict(X_test)
-    print("SVM linear f1 score:", f1_score(y_test, y_prediction_lin))
-    print("SVM linear accuracy score:", accuracy_score(y_test, y_prediction_lin))
+    print("Fold: ", count_knn)
+    count_knn += 1
 
-    SVM_sig.fit(X_train, y_train)
-    y_prediction_sig = SVM_sig.predict(X_test)
-    print("SVM sigmoid f1 score:", f1_score(y_test, y_prediction_sig))
-    print("SVM sigmoid accuracy score:", accuracy_score(y_test, y_prediction_sig))
+    for kNN in kNNs:
+        kNN.fit(X_train, y_train)
+        y_prediction = kNN.predict(X_test)
+        print("kNN with k = ", kNN.n_neighbors)
+        print("kNN f1 score:", f1_score(y_test, y_prediction))
+        print("kNN accuracy score:", accuracy_score(y_test, y_prediction))
     print('\n')
 
-# Are we allowed to use scikit learn for CV given this in the instructions:
-# "Write code that will run 5- or 10-fold cross-validation for testing hyperparameter values."
+
+
 
 # I'm just not sure what we are supposed to do with the cross validation/ what the takeaway is
 # I do see that we need to graph it and visualize it
