@@ -1,5 +1,5 @@
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import KFold
+from sklearn.model_selection import train_test_split, KFold
 from sklearn.metrics import f1_score, accuracy_score
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -21,6 +21,9 @@ feature_labels = [
 features = populations[feature_labels]
 target = populations['Absenteeism time in hours']
 
+# save 10% of data for testing
+X_training, X_testing, y_training, y_testing = train_test_split(features, target, test_size=0.1, random_state=42)
+
 # initialize variables for hyperparameter tuning and cross validation scores
 kNN_values = [3, 5, 7, 9, 11]
 accuracy_results = []
@@ -35,10 +38,11 @@ for k in kNN_values:
     fold_accuracies = []
     fold_f1_scores = []
 
-    for train_index, val_index in k_fold.split(features):
-        X_train, X_val = features.iloc[train_index], features.iloc[val_index]
-        y_train, y_val = target.iloc[train_index], target.iloc[val_index]
+    for train_index, val_index in k_fold.split(X_training):
+        X_train, X_val = X_training.iloc[train_index], X_training.iloc[val_index]
+        y_train, y_val = y_training.iloc[train_index], y_training.iloc[val_index]
 
+        # train model and predict on validation set
         kNN.fit(X_train, y_train)
         y_pred = kNN.predict(X_val)
 
