@@ -57,27 +57,27 @@ accuracy_results = []
 
 
 # run model on all hyperparameters with cross validation
-for k in kNN_values:
+for value in kNN_values:
     kNN = KNeighborsClassifier(n_neighbors=k)
 
     # perform 5-fold cross validation and calculate Accuracy score
     cv_scores = cross_val_score(kNN, X_training, y_training, cv=5, scoring='accuracy')
     mean_accuracy = cv_scores.mean()
     accuracy_results.append(mean_accuracy)
-    print(f"k = {k}: Cross-Validation Accuracy = {mean_accuracy:.4f}")
+    print(f"k = {value}: Cross-Validation Accuracy = {mean_accuracy:.4f}")
 
 # pick k that has highest accuracy score
-best_k = kNN_values[accuracy_results.index(max(accuracy_results))]
-print(f"Best k: {best_k}")
+best_value = kNN_values[accuracy_results.index(max(accuracy_results))]
+print(f"Best k: {best_value}")
 
 # train best model on test set
-final_model = KNeighborsClassifier(n_neighbors=best_k)
+final_model = KNeighborsClassifier(n_neighbors=best_value)
 final_model.fit(X_training, y_training)
 y_test_pred = final_model.predict(X_testing)
 
 # performance of test set
 test_accuracy = accuracy_score(y_testing, y_test_pred)
-print(f"Test Accuracy with k={best_k}: {test_accuracy:.4f}")
+print(f"Test Accuracy with k={best_value}: {test_accuracy:.4f}")
 
 # plot scores per k neighbor
 plt.figure(figsize=(10, 6))
