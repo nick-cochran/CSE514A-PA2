@@ -1,10 +1,6 @@
 import pandas as pd
 import statsmodels.api as sm
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.decomposition import PCA
-from sklearn.metrics import mean_squared_error
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 df = pd.read_csv('Absenteeism_at_work.csv', delimiter=';')
 print("Original dataframe:")
@@ -70,8 +66,8 @@ y = target.to_numpy()
 # print p-values for data set
 X_all = sm.add_constant(features)
 model = sm.OLS(y, X_all).fit()
-print(model.summary())
-print(f"\np-values: {model.pvalues}")
+# print(model.summary())
+# print(f"\np-values: {model.pvalues}")
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=580, test_size=148, random_state=0)
 
