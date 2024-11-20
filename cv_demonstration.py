@@ -88,5 +88,3 @@ plt.ylabel('Cross-Validation Accuracy')
 plt.title('5-Fold Cross-Validation Results for kNN')
 plt.legend()
 plt.show()
-
-# PCA

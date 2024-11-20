@@ -1,11 +1,8 @@
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.model_selection import KFold
-from sklearn.metrics import f1_score
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import cross_val_score
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -71,7 +68,7 @@ y_test_pred = final_model.predict(X_testing)
 
 # performance of test set
 test_accuracy = accuracy_score(y_testing, y_test_pred)
-print(f"Test Accuracy with Criterion={best_value}: {test_accuracy:.4f}")
+print(f"Test Accuracy with Criterion = {best_value}: {test_accuracy:.4f}")
 
 # plot scores per k neighbor
 colors = ['skyblue', 'lightgreen', 'salmon']
@@ -81,4 +78,42 @@ plt.bar(dc_values, accuracy_results, color=colors)
 plt.xlabel('Criterion')
 plt.ylabel('Cross-Validation Accuracy')
 plt.title('5-Fold Cross-Validation Results for Decision Tree Criteria')
+plt.show()
+
+print()
+# initialize variables for hyperparameters and cross validation scores
+rf_values = [5, 10, 15, 20, 25]
+accuracy_results = []
+
+# run model on all hyperparameters with cross validation
+for value in rf_values:
+    rf = RandomForestClassifier(n_estimators=value)
+
+    # perform 5-fold cross validation and calculate Accuracy score
+    cv_scores = cross_val_score(rf, X_training, y_training, cv=5, scoring='accuracy')
+    mean_accuracy = cv_scores.mean()
+    accuracy_results.append(mean_accuracy)
+    print(f"trees = {value}: Cross-Validation Accuracy = {mean_accuracy:.4f}")
+
+# pick k that has highest accuracy score
+best_value = rf_values[accuracy_results.index(max(accuracy_results))]
+print(f"Best number of trees: {best_value}")
+
+# train best model on test set
+final_model = RandomForestClassifier(n_estimators=best_value)
+final_model.fit(X_training, y_training)
+y_test_pred = final_model.predict(X_testing)
+
+# performance of test set
+test_accuracy = accuracy_score(y_testing, y_test_pred)
+print(f"Test Accuracy with number of trees = {best_value}: {test_accuracy:.4f}")
+
+# plot scores per k neighbor
+plt.figure(figsize=(10, 6))
+plt.plot(rf_values, accuracy_results, marker='o', label='Accuracy')
+# plt.plot(kNN_values, f1_results, marker='s', label='F1 Score')
+plt.xlabel('Number of Trees')
+plt.ylabel('Cross-Validation Accuracy')
+plt.title('5-Fold Cross-Validation Results for Random Forest')
+plt.legend()
 plt.show()

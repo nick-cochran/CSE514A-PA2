@@ -42,6 +42,7 @@ feature_labels = ['ID', 'Reason for absence', 'Day of the week', 'Seasons', 'Tra
                   'Distance from Residence to Work', 'Service time', 'Age', 'Work load Average/day ',
                   'Hit target', 'Disciplinary failure', 'Education', 'Son', 'Social drinker',
                   'Social smoker', 'Pet', 'Weight', 'Height', 'Body mass index', 'Month Groups']
+
 reduced_feature_labels = ['ID', 'Reason for absence', 'Day of the week', 'Seasons',
                   'Transportation expense', 'Distance from Residence to Work', 'Service time',
                   'Age', 'Work load Average/day ', 'Hit target', 'Disciplinary failure', 'Education',
@@ -153,11 +154,6 @@ def knn_cross_validation(X_training, y_training):
     plt.title('5-Fold Cross-Validation Results for kNN')
     plt.legend()
     plt.show()
-
-
-
-
-
 
 
 print("\033[1mKNN cross validation on Full Data\033[0m")
