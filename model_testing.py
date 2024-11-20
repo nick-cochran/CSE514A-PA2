@@ -120,7 +120,10 @@ def svm_cross_validation(X_training, y_training, population):
     plt.bar(kernels, accuracy_results, color=colors)
     plt.xlabel('Kernels')
     plt.ylabel('Cross-Validation Accuracy')
-    plt.title('5-Fold Cross-Validation Results for SVM Kernels on population ' + population)
+    if reduce:
+        plt.title('5-Fold Cross-Validation Results for SVM Kernels on reduced population ' + population)
+    else:
+        plt.title('5-Fold Cross-Validation Results for SVM Kernels on population ' + population)
     plt.show()
 
 def knn_cross_validation(X_training, y_training, population):
@@ -161,7 +164,10 @@ def knn_cross_validation(X_training, y_training, population):
     # plt.plot(kNN_values, f1_results, marker='s', label='F1 Score')
     plt.xlabel('Number of Neighbors (k)')
     plt.ylabel('Cross-Validation Accuracy')
-    plt.title('5-Fold Cross-Validation Results for kNN on population ' + population)
+    if reduce:
+        plt.title('5-Fold Cross-Validation Results for kNN on reduced population ' + population)
+    else:
+        plt.title('5-Fold Cross-Validation Results for kNN on population ' + population)
     plt.legend()
     plt.show()
 
