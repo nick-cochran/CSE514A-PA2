@@ -8,7 +8,15 @@ from sklearn.metrics import f1_score
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import cross_val_score
 import pandas as pd
+import matplotlib.pyplot as plt
 import numpy as np
+import sys
+
+# set reduce bool
+if len(sys.argv) > 1 and sys.argv[1] == 'reduce':
+    reduce = True
+else:
+    reduce = False
 
 # load data
 populations = pd.read_csv('Modified_Populations.csv')
@@ -22,23 +30,35 @@ A_train, A_test = train_test_split(population_A, test_size=0.1, random_state=42)
 B_train, B_test = train_test_split(population_B, test_size=0.1, random_state=42)
 C_train, C_test = train_test_split(population_C, test_size=0.1, random_state=42)
 
-# A_train.to_csv('population_A_train.csv')
-# A_test.to_csv('population_A_test.csv')
-# B_train.to_csv('population_B_train.csv')
-# B_test.to_csv('population_B_test.csv')
-# C_train.to_csv('population_C_train.csv')
-# C_test.to_csv('population_C_test.csv')
+A_train.to_csv('population_A_train.csv')
+A_test.to_csv('population_A_test.csv')
+B_train.to_csv('population_B_train.csv')
+B_test.to_csv('population_B_test.csv')
+C_train.to_csv('population_C_train.csv')
+C_test.to_csv('population_C_test.csv')
 
 # Split the data into features and target
-feature_labels = ['ID', 'Reason for absence', 'Month of absence', 'Day of the week', 'Seasons',
+feature_labels = ['ID', 'Reason for absence', 'Day of the week', 'Seasons', 'Transportation expense',
+                  'Distance from Residence to Work', 'Service time', 'Age', 'Work load Average/day ',
+                  'Hit target', 'Disciplinary failure', 'Education', 'Son', 'Social drinker',
+                  'Social smoker', 'Pet', 'Weight', 'Height', 'Body mass index', 'Month Groups']
+reduced_feature_labels = ['ID', 'Reason for absence', 'Day of the week', 'Seasons',
                   'Transportation expense', 'Distance from Residence to Work', 'Service time',
                   'Age', 'Work load Average/day ', 'Hit target', 'Disciplinary failure', 'Education',
                   'Son', 'Social drinker', 'Social smoker', 'Pet', 'Weight', 'Height', 'Body mass index',
                   'Month Groups']
-features = populations[feature_labels]
-A_features = population_A[feature_labels]
-B_features = population_B[feature_labels]
-C_features = population_C[feature_labels]
+
+if reduce:
+    features = populations[reduced_feature_labels]
+    A_features = population_A[reduced_feature_labels]
+    B_features = population_B[reduced_feature_labels]
+    C_features = population_C[reduced_feature_labels]
+else:
+    features = populations[feature_labels]
+    A_features = population_A[feature_labels]
+    B_features = population_B[feature_labels]
+    C_features = population_C[feature_labels]
+
 
 target = populations['Absenteeism time in hours']
 A_target = population_A['Absenteeism time in hours']
@@ -52,68 +72,118 @@ BX_train, BX_test, By_train, By_test = train_test_split(B_features, B_target, te
 CX_train, CX_test, Cy_train, Cy_test = train_test_split(C_features, C_target, test_size=0.1, random_state=42)
 
 # Create the model
-SVM_lin = svm.SVC(kernel='linear', )  # SVM hyperparameter value is the kernel type
+SVM_lin = svm.SVC(kernel='linear')  # SVM hyperparameter value is the kernel type
 SVM_poly = svm.SVC(kernel='poly')
 SVM_rbf = svm.SVC(kernel='rbf')
 # model.fit(X_train, y_train)
 # print(model.score(X_test, y_test))
 
-# kf_svm = KFold(n_splits=5)
-# count = 0
-# print("CV for SVMs\n")
-# for train_index, test_index in kf_svm.split(X_training): # idk what this does but copilot suggested it
-#     X_train, X_test = features.iloc[train_index], features.iloc[test_index]
-#     y_train, y_test = target.iloc[train_index], target.iloc[test_index]
-#
-#     print("Fold: ", count)
-#     count += 1
-#
-#     SVM_lin.fit(X_train, y_train)
-#     y_prediction_lin = SVM_lin.predict(X_test)
-#     print("SVM linear f1 score:", f1_score(y_test, y_prediction_lin))
-#     print("SVM linear accuracy score:", accuracy_score(y_test, y_prediction_lin))
-#
-#     SVM_poly.fit(X_train, y_train)
-#     y_prediction_poly = SVM_poly.predict(X_test)
-#     print("SVM polynomial f1 score:", f1_score(y_test, y_prediction_poly))
-#     print("SVM polynomial accuracy score:", accuracy_score(y_test, y_prediction_poly))
-#
-#     SVM_rbf.fit(X_train, y_train)
-#     y_prediction_rbf = SVM_rbf.predict(X_test)
-#     print("SVM RBF f1 score:", f1_score(y_test, y_prediction_rbf))
-#     print("SVM RBF accuracy score:", accuracy_score(y_test, y_prediction_rbf))
-#
-#     # for i in range(len(y_prediction)):
-#     #     print(y_prediction[i], y_test.iloc[i])
-#     # print('\n')
-#     print('\n')
+score_lin = cross_val_score(SVM_lin, X_training, y_training, cv=5)
+score_poly = cross_val_score(SVM_poly, X_training, y_training, cv=5)
+score_rbf = cross_val_score(SVM_rbf, X_training, y_training, cv=5)
+print("SVM linear cross validation score: ", score_lin)
+print("SVM polynomial cross validation score: ", score_poly)
+print("SVM RBF cross validation score: ", score_rbf)
+
+def svm_cross_validation(X_training, y_training):
+    SVMs = [svm.SVC(kernel='linear'), svm.SVC(kernel='poly'), svm.SVC(kernel='rbf')]
+    accuracy_results = []
+
+    for SVM in SVMs:
+        # perform 5-fold cross validation and calculate Accuracy score
+        cv_scores = cross_val_score(SVM, X_training, y_training, cv=5, scoring='accuracy')
+        print("SVM with kernel:  ", SVM.kernel, " has cross validation score: ", cv_scores)
+        mean_accuracy = cv_scores.mean()
+        accuracy_results.append(mean_accuracy)
+        print(f"kernel = {SVM.kernel}: Cross-Validation Accuracy = {mean_accuracy:.4f}")
+
+    best_kernel = SVMs[accuracy_results.index(max(accuracy_results))].kernel
+    print(f"Best kernel: {best_kernel}")
+
+    # train best model on test set
+    final_model = svm.SVC(kernel=best_kernel)
+    final_model.fit(X_training, y_training)
+    y_test_pred = final_model.predict(X_testing)
+
+    # performance of test set
+    test_accuracy = accuracy_score(y_testing, y_test_pred)
+    print(f"Test Accuracy with k={best_kernel}: {test_accuracy:.4f}")
+
+    # plot scores per kernel
+    # plt.figure(figsize=(10, 6))
+    # plt.plot(kNN_values, accuracy_results, marker='o', label='Accuracy')
+    # plt.xlabel('Number of Neighbors (k)')
+    # plt.ylabel('Cross-Validation Accuracy')
+    # plt.title('5-Fold Cross-Validation Results for SVM')
+    # plt.legend()
+    # plt.show()
+
+def knn_cross_validation(X_training, y_training):
+    kNN_values = [3, 7, 11, 13, 17]
+    accuracy_results = []
+
+    for k in kNN_values:
+        kNN = KNeighborsClassifier(n_neighbors=k)
+
+        # perform 5-fold cross validation and calculate Accuracy score
+        cv_scores = cross_val_score(kNN, X_training, y_training, cv=5, scoring='accuracy')
+        print("kNN ", k, " cross validation score: ", cv_scores)
+        mean_accuracy = cv_scores.mean()
+        accuracy_results.append(mean_accuracy)
+        print(f"k = {k}: Cross-Validation Accuracy = {mean_accuracy:.4f}")
+
+    best_k = kNN_values[accuracy_results.index(max(accuracy_results))]
+    print(f"Best k: {best_k}")
+
+    # train best model on test set
+    final_model = KNeighborsClassifier(n_neighbors=best_k)
+    final_model.fit(X_training, y_training)
+    y_test_pred = final_model.predict(X_testing)
+
+    # performance of test set
+    test_accuracy = accuracy_score(y_testing, y_test_pred)
+    print(f"Test Accuracy with k={best_k}: {test_accuracy:.4f}")
+
+    # plot scores per k neighbor
+    plt.figure(figsize=(10, 6))
+    plt.plot(kNN_values, accuracy_results, marker='o', label='Accuracy')
+    # plt.plot(kNN_values, f1_results, marker='s', label='F1 Score')
+    plt.xlabel('Number of Neighbors (k)')
+    plt.ylabel('Cross-Validation Accuracy')
+    plt.title('5-Fold Cross-Validation Results for kNN')
+    plt.legend()
+    plt.show()
 
 
-kNNs = [KNeighborsClassifier(n_neighbors=3), KNeighborsClassifier(n_neighbors=5), KNeighborsClassifier(n_neighbors=7),
-        KNeighborsClassifier(n_neighbors=9), KNeighborsClassifier(n_neighbors=11)]
-
-kf_knn = KFold(n_splits=5)
-count_knn = 0
-print("CV for SVMs\n")
-for train_index, test_index in kf_knn.split(X_training):
-    X_train, X_test = features.iloc[train_index], features.iloc[test_index]
-    y_train, y_test = target.iloc[train_index], target.iloc[test_index]
-
-    print("Fold: ", count_knn)
-    count_knn += 1
-
-    for kNN in kNNs:
-        kNN.fit(X_train, y_train)
-        y_prediction = kNN.predict(X_test)
-        print("kNN with k = ", kNN.n_neighbors)
-        print("kNN f1 score:", f1_score(y_test, y_prediction))
-        print("kNN accuracy score:", accuracy_score(y_test, y_prediction))
-    print('\n')
-
-# I'm just not sure what we are supposed to do with the cross validation/ what the takeaway is
-# I do see that we need to graph it and visualize it
 
 
+
+
+
+print("\033[1mKNN cross validation on Full Data\033[0m")
+knn_cross_validation(X_training, y_training)
+
+print("\033[1mKNN cross validation on Population A\033[0m")
+knn_cross_validation(AX_train, Ay_train)
+
+print("\033[1mKNN cross validation on Population B\033[0m")
+knn_cross_validation(BX_train, By_train)
+
+print("\033[1mKNN cross validation on Population C\033[0m")
+knn_cross_validation(CX_train, Cy_train)
+
+
+print("\033[1mSVM cross validation on Full Data\033[0m")
+svm_cross_validation(X_training, y_training)
+
+print("\033[1mSVM cross validation on Population A\033[0m")
+svm_cross_validation(AX_train, Ay_train)
+
+print("\033[1mSVM cross validation on Population B\033[0m")
+svm_cross_validation(BX_train, By_train)
+
+print("\033[1mSVM cross validation on Population C\033[0m")
+svm_cross_validation(CX_train, Cy_train)
 
 
 
