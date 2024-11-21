@@ -44,6 +44,7 @@ feature_labels = ['ID', 'Reason for absence', 'Day of the week', 'Seasons', 'Tra
                   'Distance from Residence to Work', 'Service time', 'Age', 'Work load Average/day ',
                   'Hit target', 'Disciplinary failure', 'Education', 'Son', 'Social drinker',
                   'Social smoker', 'Pet', 'Weight', 'Height', 'Body mass index', 'Month Groups']
+
 reduced_feature_labels = ['Reason for absence', 'Day of the week', 'Seasons', 'Work load Average/day ',
                           'Disciplinary failure', 'Son', 'Social drinker', 'Pet', 'Body mass index', 'Month Groups']
 
@@ -61,11 +62,11 @@ if reduce:
     # population_A = population_A[reduced_feature_labels + ['Absenteeism time in hours']]
     # population_B = population_B[reduced_feature_labels + ['Absenteeism time in hours']]
     # population_C = population_C[reduced_feature_labels + ['Absenteeism time in hours']]
-    #
+
     # A_train, A_test = train_test_split(population_A, test_size=0.1, random_state=42)
     # B_train, B_test = train_test_split(population_B, test_size=0.1, random_state=42)
     # C_train, C_test = train_test_split(population_C, test_size=0.1, random_state=42)
-    #
+
     # A_train.to_csv('population_A_train_reduced.csv')
     # A_test.to_csv('population_A_test_reduced.csv')
     # B_train.to_csv('population_B_train_reduced.csv')
@@ -91,7 +92,7 @@ def svm_cross_validation(X_training, y_training, population):
     for SVM in SVMs:
         # perform 5-fold cross validation and calculate Accuracy score
         cv_scores = cross_val_score(SVM, X_training, y_training, cv=5, scoring=make_scorer(f1_score))
-        print("SVM with kernel:  ", SVM.kernel, " has cross validation score: ", cv_scores)
+        # print("SVM with kernel:  ", SVM.kernel, " has cross validation score: ", cv_scores)
         mean_f1 = cv_scores.mean()
         f1_results.append(mean_f1)
         print(f"kernel = {SVM.kernel}: Cross-Validation Accuracy = {mean_f1:.4f}")
@@ -128,16 +129,16 @@ def svm_cross_validation(X_training, y_training, population):
     else:
         plt.title('5-Fold Cross-Validation Results for SVM Kernels on population ' + population)
         # plt.savefig(f'SVM_{population}.png')
-    plt.show()
+    # plt.show()
 
     # confusion matrix
-    cm = confusion_matrix(y_testing, y_test_pred)
-    sns.heatmap(cm, annot=True, fmt='d')
-    plt.xlabel('Predicted')
-    plt.ylabel('Actual')
-    plt.title(f'Confusion Matrix for SVM on Population {population}')
+    # cm = confusion_matrix(y_testing, y_test_pred)
+    # sns.heatmap(cm, annot=True, fmt='d')
+    # plt.xlabel('Predicted')
+    # plt.ylabel('Actual')
+    # plt.title(f'Confusion Matrix for SVM on Population {population}')
     # plt.savefig(f'SVM_Confusion_{population}.png')
-    plt.show()
+    # plt.show()
 
 
 def knn_cross_validation(X_training, y_training, population):
@@ -149,7 +150,7 @@ def knn_cross_validation(X_training, y_training, population):
 
         # perform 5-fold cross validation and calculate Accuracy score
         cv_scores = cross_val_score(kNN, X_training, y_training, cv=5, scoring=make_scorer(f1_score))
-        print("kNN ", k, " cross validation score: ", cv_scores)
+        # print("kNN ", k, " cross validation score: ", cv_scores)
         mean_f1 = cv_scores.mean()
         f1_results.append(mean_f1)
         print(f"k = {k}: Cross-Validation F1 Score = {mean_f1:.4f}")
@@ -184,17 +185,17 @@ def knn_cross_validation(X_training, y_training, population):
     else:
         plt.title('5-Fold Cross-Validation Results for kNN on population ' + population)
         # plt.savefig(f'kNN_{population}.png')
-    plt.legend()
-    plt.show()
+    # plt.legend()
+    # plt.show()
 
     # confusion matrix
-    cm = confusion_matrix(y_testing, y_test_pred)
-    sns.heatmap(cm, annot=True, fmt='d')
-    plt.xlabel('Predicted')
-    plt.ylabel('Actual')
-    plt.title(f'Confusion Matrix for kNN on Population {population}')
+    # cm = confusion_matrix(y_testing, y_test_pred)
+    # sns.heatmap(cm, annot=True, fmt='d')
+    # plt.xlabel('Predicted')
+    # plt.ylabel('Actual')
+    # plt.title(f'Confusion Matrix for kNN on Population {population}')
     # plt.savefig(f'kNN_Confusion_{population}.png')
-    plt.show()
+    # plt.show()
 
 
 def decision_tree_cross_validation(X_training, y_training, X_testing, y_testing, population):
@@ -219,12 +220,12 @@ def decision_tree_cross_validation(X_training, y_training, X_testing, y_testing,
     final_model = DecisionTreeClassifier(criterion=best_criterion)
     final_model.fit(X_training, y_training)
     end_training = time.time()
-    print(f"\033[1mTraining time: {end_training - start_training:.2f} seconds for population {population}\033[0m")
+    print(f"\033[1mTraining time: {end_training - start_training} seconds for population {population}\033[0m")
 
     start_prediction = time.time()
     y_test_pred = final_model.predict(X_testing)
     end_prediction = time.time()
-    print(f"\033[1mPrediction time: {end_prediction - start_prediction:.2f} seconds for population {population}\033[0m")
+    print(f"\033[1mPrediction time: {end_prediction - start_prediction} seconds for population {population}\033[0m")
 
     # performance on test set
     test_f1 = f1_score(y_testing, y_test_pred)
@@ -241,17 +242,17 @@ def decision_tree_cross_validation(X_training, y_training, X_testing, y_testing,
     else:
         plt.title('5-Fold Cross-Validation Results for Decision Tree on population ' + population)
         # plt.savefig(f'DT_{population}.png')
-    plt.show()
+    # plt.show()
 
     # confusion matrix
-    cm = confusion_matrix(y_testing, y_test_pred)
-    sns.heatmap(cm, annot=True, fmt='d')
-    plt.xlabel('Predicted')
-    plt.ylabel('Actual')
-    plt.title(f'Confusion Matrix for Decision Tree on Population {population}')
+    # cm = confusion_matrix(y_testing, y_test_pred)
+    # sns.heatmap(cm, annot=True, fmt='d')
+    # plt.xlabel('Predicted')
+    # plt.ylabel('Actual')
+    # plt.title(f'Confusion Matrix for Decision Tree on Population {population}')
     # plt.savefig(f'DT_Confusion_{population}.png')
-    plt.legend()
-    plt.show()
+    # plt.legend()
+    # plt.show()
 
 
 def random_forest_cross_validation(X_training, y_training, X_testing, y_testing, population):
@@ -276,12 +277,12 @@ def random_forest_cross_validation(X_training, y_training, X_testing, y_testing,
     final_model = RandomForestClassifier(n_estimators=best_n)
     final_model.fit(X_training, y_training)
     end_training = time.time()
-    print(f"\033[1mTraining time: {end_training - start_training:.2f} seconds for population {population}\033[0m")
+    print(f"\033[1mTraining time: {end_training - start_training} seconds for population {population}\033[0m")
 
     start_prediction = time.time()
     y_test_pred = final_model.predict(X_testing)
     end_prediction = time.time()
-    print(f"\033[1mPrediction time: {end_prediction - start_prediction:.2f} seconds for population {population}\033[0m")
+    print(f"\033[1mPrediction time: {end_prediction - start_prediction} seconds for population {population}\033[0m")
 
     # performance on test set
     test_f1 = f1_score(y_testing, y_test_pred)
@@ -299,16 +300,16 @@ def random_forest_cross_validation(X_training, y_training, X_testing, y_testing,
         plt.title('5-Fold Cross-Validation Results for Random Forest on population ' + population)
         # plt.savefig(f'RF_{population}.png')
     plt.legend()
-    plt.show()
+    # plt.show()
 
     # confusion matrix
-    cm = confusion_matrix(y_testing, y_test_pred)
-    sns.heatmap(cm, annot=True, fmt='d')
-    plt.xlabel('Predicted')
-    plt.ylabel('Actual')
-    plt.title(f'Confusion Matrix for Random Forest on Population {population}')
+    # cm = confusion_matrix(y_testing, y_test_pred)
+    # sns.heatmap(cm, annot=True, fmt='d')
+    # plt.xlabel('Predicted')
+    # plt.ylabel('Actual')
+    # plt.title(f'Confusion Matrix for Random Forest on Population {population}')
     # plt.savefig(f'RF_Confusion_{population}.png')
-    plt.show()
+    # plt.show()
 
 
 # print("\033[1mKNN cross validation on Full Data\033[0m")
