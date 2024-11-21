@@ -1,16 +1,15 @@
-from numpy.random import sample
 from sklearn import svm
-from sklearn.neighbors import NearestNeighbors
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.model_selection import KFold
-from sklearn.metrics import f1_score
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import make_scorer, f1_score
+from sklearn.metrics import confusion_matrix
 import pandas as pd
 import matplotlib.pyplot as plt
-import numpy as np
+import seaborn as sns
 import sys
 import time
 
@@ -87,16 +86,12 @@ CX_train, CX_test, Cy_train, Cy_test = train_test_split(C_features, C_target, te
 
 def svm_cross_validation(X_training, y_training, population):
     SVMs = [svm.SVC(kernel='linear'), svm.SVC(kernel='poly'), svm.SVC(kernel='rbf')]
-    # accuracy_results = []
     f1_results = []
 
     for SVM in SVMs:
         # perform 5-fold cross validation and calculate Accuracy score
         cv_scores = cross_val_score(SVM, X_training, y_training, cv=5, scoring=make_scorer(f1_score))
         print("SVM with kernel:  ", SVM.kernel, " has cross validation score: ", cv_scores)
-        # mean_accuracy = cv_scores.mean()
-        # accuracy_results.append(mean_accuracy)
-        # print(f"kernel = {SVM.kernel}: Cross-Validation Accuracy = {mean_accuracy:.4f}")
         mean_f1 = cv_scores.mean()
         f1_results.append(mean_f1)
         print(f"kernel = {SVM.kernel}: Cross-Validation Accuracy = {mean_f1:.4f}")
@@ -121,7 +116,7 @@ def svm_cross_validation(X_training, y_training, population):
     print(f"Test F1 Score with k={best_kernel}: {test_f1:.4f}")
 
     kernels = ['linear', 'poly', 'rbf']
-    colors = ['skyblue', 'lightgreen', 'salmon']
+    colors = ['c', 'm', 'y']
     plt.figure(figsize=(10, 6))
     plt.bar(kernels, f1_results, color=colors)
     plt.xlabel('Kernels')
@@ -129,16 +124,24 @@ def svm_cross_validation(X_training, y_training, population):
     plt.ylabel('Cross-Validation F1 Scores')
     if reduce:
         plt.title('5-Fold Cross-Validation Results for SVM Kernels on reduced population ' + population)
-        plt.savefig(f'SVM_reduced_{population}.png')
+        # plt.savefig(f'SVM_reduced_{population}.png')
     else:
         plt.title('5-Fold Cross-Validation Results for SVM Kernels on population ' + population)
-        plt.savefig(f'SVM_{population}.png')
+        # plt.savefig(f'SVM_{population}.png')
+    plt.show()
+
+    # confusion matrix
+    cm = confusion_matrix(y_testing, y_test_pred)
+    sns.heatmap(cm, annot=True, fmt='d')
+    plt.xlabel('Predicted')
+    plt.ylabel('Actual')
+    plt.title(f'Confusion Matrix for SVM on Population {population}')
+    # plt.savefig(f'SVM_Confusion_{population}.png')
     plt.show()
 
 
 def knn_cross_validation(X_training, y_training, population):
     kNN_values = [3, 7, 11, 13, 17]
-    # accuracy_results = []
     f1_results = []
 
     for k in kNN_values:
@@ -147,9 +150,6 @@ def knn_cross_validation(X_training, y_training, population):
         # perform 5-fold cross validation and calculate Accuracy score
         cv_scores = cross_val_score(kNN, X_training, y_training, cv=5, scoring=make_scorer(f1_score))
         print("kNN ", k, " cross validation score: ", cv_scores)
-        # mean_accuracy = cv_scores.mean()
-        # f1_results.append(mean_accuracy)
-        # print(f"k = {k}: Cross-Validation Accuracy = {mean_accuracy:.4f}")
         mean_f1 = cv_scores.mean()
         f1_results.append(mean_f1)
         print(f"k = {k}: Cross-Validation F1 Score = {mean_f1:.4f}")
@@ -175,23 +175,140 @@ def knn_cross_validation(X_training, y_training, population):
 
     # plot scores per k neighbor
     plt.figure(figsize=(10, 6))
-    # plt.plot(kNN_values, accuracy_results, marker='o', label='Accuracy')
     plt.plot(kNN_values, f1_results, marker='s', label='F1 Score')
     plt.xlabel('Number of Neighbors (k)')
     plt.ylabel('Cross-Validation F1 Score')
     if reduce:
         plt.title('5-Fold Cross-Validation Results for kNN on reduced population ' + population)
-        plt.savefig(f'kNN_reduced_{population}.png')
+        # plt.savefig(f'kNN_reduced_{population}.png')
     else:
         plt.title('5-Fold Cross-Validation Results for kNN on population ' + population)
-        plt.savefig(f'kNN_{population}.png')
+        # plt.savefig(f'kNN_{population}.png')
+    plt.legend()
+    plt.show()
+
+    # confusion matrix
+    cm = confusion_matrix(y_testing, y_test_pred)
+    sns.heatmap(cm, annot=True, fmt='d')
+    plt.xlabel('Predicted')
+    plt.ylabel('Actual')
+    plt.title(f'Confusion Matrix for kNN on Population {population}')
+    # plt.savefig(f'kNN_Confusion_{population}.png')
+    plt.show()
+
+
+def decision_tree_cross_validation(X_training, y_training, X_testing, y_testing, population):
+    criteria = ['gini', 'entropy', 'log_loss']
+    f1_results = []
+
+    for criterion in criteria:
+        dt = DecisionTreeClassifier(criterion=criterion)
+
+        # perform 5-fold cross-validation
+        cv_scores = cross_val_score(dt, X_training, y_training, cv=5, scoring=make_scorer(f1_score))
+        mean_f1 = cv_scores.mean()
+        f1_results.append(mean_f1)
+        print(f"Criterion = {criterion}: Cross-Validation F1-Score = {mean_f1:.4f}")
+
+    # determine best criterion
+    best_criterion = criteria[f1_results.index(max(f1_results))]
+    print(f"Best Criterion: {best_criterion}")
+
+    # train and test model
+    start_training = time.time()
+    final_model = DecisionTreeClassifier(criterion=best_criterion)
+    final_model.fit(X_training, y_training)
+    end_training = time.time()
+    print(f"\033[1mTraining time: {end_training - start_training:.2f} seconds for population {population}\033[0m")
+
+    start_prediction = time.time()
+    y_test_pred = final_model.predict(X_testing)
+    end_prediction = time.time()
+    print(f"\033[1mPrediction time: {end_prediction - start_prediction:.2f} seconds for population {population}\033[0m")
+
+    # performance on test set
+    test_f1 = f1_score(y_testing, y_test_pred)
+    print(f"Test F1 Score with best criterion ({best_criterion}): {test_f1:.4f}")
+
+    # plot F1 scores
+    plt.figure(figsize=(10, 6))
+    plt.bar(criteria, f1_results, color=['c', 'm', 'y'])
+    plt.xlabel('Criterion')
+    plt.ylabel('Cross-Validation F1 Score')
+    if reduce:
+        plt.title('Decision Tree Cross-Validation Results for kNN on reduced population ' + population)
+        # plt.savefig(f'DT_reduced_{population}.png')
+    else:
+        plt.title('5-Fold Cross-Validation Results for Decision Tree on population ' + population)
+        # plt.savefig(f'DT_{population}.png')
+    plt.show()
+
+    # confusion matrix
+    cm = confusion_matrix(y_testing, y_test_pred)
+    sns.heatmap(cm, annot=True, fmt='d')
+    plt.xlabel('Predicted')
+    plt.ylabel('Actual')
+    plt.title(f'Confusion Matrix for Decision Tree on Population {population}')
+    # plt.savefig(f'DT_Confusion_{population}.png')
     plt.legend()
     plt.show()
 
 
+def random_forest_cross_validation(X_training, y_training, X_testing, y_testing, population):
+    n_trees = [5, 10, 15, 20, 25]
+    f1_results = []
 
+    for n in n_trees:
+        rf = RandomForestClassifier(n_estimators=n)
 
+        # perform 5-fold cross-validation
+        cv_scores = cross_val_score(rf, X_training, y_training, cv=5, scoring=make_scorer(f1_score))
+        mean_f1 = cv_scores.mean()
+        f1_results.append(mean_f1)
+        print(f"Trees = {n}: Cross-Validation F1-Score = {mean_f1:.4f}")
 
+    # determine best number of trees
+    best_n = n_trees[f1_results.index(max(f1_results))]
+    print(f"Best number of trees: {best_n}")
+
+    # train and test model
+    start_training = time.time()
+    final_model = RandomForestClassifier(n_estimators=best_n)
+    final_model.fit(X_training, y_training)
+    end_training = time.time()
+    print(f"\033[1mTraining time: {end_training - start_training:.2f} seconds for population {population}\033[0m")
+
+    start_prediction = time.time()
+    y_test_pred = final_model.predict(X_testing)
+    end_prediction = time.time()
+    print(f"\033[1mPrediction time: {end_prediction - start_prediction:.2f} seconds for population {population}\033[0m")
+
+    # performance on test set
+    test_f1 = f1_score(y_testing, y_test_pred)
+    print(f"Test F1 Score with best number of trees ({best_n}): {test_f1:.4f}")
+
+    # plot F1 scores
+    plt.figure(figsize=(10, 6))
+    plt.plot(n_trees, f1_results, marker='o', label='F1 Score')
+    plt.xlabel('Number of Trees')
+    plt.ylabel('Cross-Validation F1 Score')
+    if reduce:
+        plt.title('5-Fold Cross-Validation Results for Random Forest on reduced population ' + population)
+        # plt.savefig(f'RF_reduced_{population}.png')
+    else:
+        plt.title('5-Fold Cross-Validation Results for Random Forest on population ' + population)
+        # plt.savefig(f'RF_{population}.png')
+    plt.legend()
+    plt.show()
+
+    # confusion matrix
+    cm = confusion_matrix(y_testing, y_test_pred)
+    sns.heatmap(cm, annot=True, fmt='d')
+    plt.xlabel('Predicted')
+    plt.ylabel('Actual')
+    plt.title(f'Confusion Matrix for Random Forest on Population {population}')
+    # plt.savefig(f'RF_Confusion_{population}.png')
+    plt.show()
 
 
 # print("\033[1mKNN cross validation on Full Data\033[0m")
@@ -219,6 +336,26 @@ svm_cross_validation(BX_train, By_train, 'B')
 print("\033[1mSVM cross validation on Population C\033[0m")
 svm_cross_validation(CX_train, Cy_train, 'C')
 
+
+print("\033[1mDecision Tree cross validation on Population A\033[0m")
+decision_tree_cross_validation(AX_train, Ay_train, AX_test, Ay_test, 'A')
+
+print("\033[1mDecision Tree cross validation on Population B\033[0m")
+decision_tree_cross_validation(BX_train, By_train, BX_test, By_test, 'B')
+
+print("\033[1mDecision Tree cross validation on Population C\033[0m")
+decision_tree_cross_validation(CX_train, Cy_train, CX_test, Cy_test, 'C')
+
+
+
+print("\033[1mRandom Forest cross validation on Population A\033[0m")
+random_forest_cross_validation(AX_train, Ay_train, AX_test, Ay_test, 'A')
+
+print("\033[1mRandom Forest cross validation on Population B\033[0m")
+random_forest_cross_validation(BX_train, By_train, BX_test, By_test, 'B')
+
+print("\033[1mRandom Forest cross validation on Population C\033[0m")
+random_forest_cross_validation(CX_train, Cy_train, CX_test, Cy_test, 'C')
 
 
 
