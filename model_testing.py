@@ -62,11 +62,11 @@ if reduce:
     # population_A = population_A[reduced_feature_labels + ['Absenteeism time in hours']]
     # population_B = population_B[reduced_feature_labels + ['Absenteeism time in hours']]
     # population_C = population_C[reduced_feature_labels + ['Absenteeism time in hours']]
-
+    #
     # A_train, A_test = train_test_split(population_A, test_size=0.1, random_state=42)
     # B_train, B_test = train_test_split(population_B, test_size=0.1, random_state=42)
     # C_train, C_test = train_test_split(population_C, test_size=0.1, random_state=42)
-
+    #
     # A_train.to_csv('population_A_train_reduced.csv')
     # A_test.to_csv('population_A_test_reduced.csv')
     # B_train.to_csv('population_B_train_reduced.csv')
