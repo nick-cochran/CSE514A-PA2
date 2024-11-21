@@ -7,6 +7,7 @@ from sklearn.model_selection import KFold
 from sklearn.metrics import f1_score
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import cross_val_score
+from sklearn.metrics import make_scorer, f1_score
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -86,17 +87,22 @@ CX_train, CX_test, Cy_train, Cy_test = train_test_split(C_features, C_target, te
 
 def svm_cross_validation(X_training, y_training, population):
     SVMs = [svm.SVC(kernel='linear'), svm.SVC(kernel='poly'), svm.SVC(kernel='rbf')]
-    accuracy_results = []
+    # accuracy_results = []
+    f1_results = []
 
     for SVM in SVMs:
         # perform 5-fold cross validation and calculate Accuracy score
-        cv_scores = cross_val_score(SVM, X_training, y_training, cv=5, scoring='accuracy')
+        cv_scores = cross_val_score(SVM, X_training, y_training, cv=5, scoring=make_scorer(f1_score))
         print("SVM with kernel:  ", SVM.kernel, " has cross validation score: ", cv_scores)
-        mean_accuracy = cv_scores.mean()
-        accuracy_results.append(mean_accuracy)
-        print(f"kernel = {SVM.kernel}: Cross-Validation Accuracy = {mean_accuracy:.4f}")
+        # mean_accuracy = cv_scores.mean()
+        # accuracy_results.append(mean_accuracy)
+        # print(f"kernel = {SVM.kernel}: Cross-Validation Accuracy = {mean_accuracy:.4f}")
+        mean_f1 = cv_scores.mean()
+        f1_results.append(mean_f1)
+        print(f"kernel = {SVM.kernel}: Cross-Validation Accuracy = {mean_f1:.4f}")
 
-    best_kernel = SVMs[accuracy_results.index(max(accuracy_results))].kernel
+    # best_kernel = SVMs[accuracy_results.index(max(accuracy_results))].kernel
+    best_kernel = SVMs[f1_results.index(max(f1_results))].kernel
     print(f"Best kernel: {best_kernel}")
 
     # train best model on test set
@@ -111,36 +117,45 @@ def svm_cross_validation(X_training, y_training, population):
     print(f"\033[1mPrediction time: {end_prediction - start_prediction} for population {population}\033[0m")
 
     # performance of test set
-    test_accuracy = accuracy_score(y_testing, y_test_pred)
-    print(f"Test Accuracy with k={best_kernel}: {test_accuracy:.4f}")
+    test_f1 = f1_score(y_testing, y_test_pred)
+    print(f"Test F1 Score with k={best_kernel}: {test_f1:.4f}")
 
     kernels = ['linear', 'poly', 'rbf']
     colors = ['skyblue', 'lightgreen', 'salmon']
     plt.figure(figsize=(10, 6))
-    plt.bar(kernels, accuracy_results, color=colors)
+    plt.bar(kernels, f1_results, color=colors)
     plt.xlabel('Kernels')
-    plt.ylabel('Cross-Validation Accuracy')
+    # plt.ylabel('Cross-Validation Accuracy')
+    plt.ylabel('Cross-Validation F1 Scores')
     if reduce:
         plt.title('5-Fold Cross-Validation Results for SVM Kernels on reduced population ' + population)
+        plt.savefig(f'SVM_reduced_{population}.png')
     else:
         plt.title('5-Fold Cross-Validation Results for SVM Kernels on population ' + population)
+        plt.savefig(f'SVM_{population}.png')
     plt.show()
+
 
 def knn_cross_validation(X_training, y_training, population):
     kNN_values = [3, 7, 11, 13, 17]
-    accuracy_results = []
+    # accuracy_results = []
+    f1_results = []
 
     for k in kNN_values:
         kNN = KNeighborsClassifier(n_neighbors=k)
 
         # perform 5-fold cross validation and calculate Accuracy score
-        cv_scores = cross_val_score(kNN, X_training, y_training, cv=5, scoring='accuracy')
+        cv_scores = cross_val_score(kNN, X_training, y_training, cv=5, scoring=make_scorer(f1_score))
         print("kNN ", k, " cross validation score: ", cv_scores)
-        mean_accuracy = cv_scores.mean()
-        accuracy_results.append(mean_accuracy)
-        print(f"k = {k}: Cross-Validation Accuracy = {mean_accuracy:.4f}")
+        # mean_accuracy = cv_scores.mean()
+        # f1_results.append(mean_accuracy)
+        # print(f"k = {k}: Cross-Validation Accuracy = {mean_accuracy:.4f}")
+        mean_f1 = cv_scores.mean()
+        f1_results.append(mean_f1)
+        print(f"k = {k}: Cross-Validation F1 Score = {mean_f1:.4f}")
 
-    best_k = kNN_values[accuracy_results.index(max(accuracy_results))]
+    # best_k = kNN_values[accuracy_results.index(max(accuracy_results))]
+    best_k = kNN_values[f1_results.index(max(f1_results))]
     print(f"Best k: {best_k}")
 
     # train best model on test set
@@ -155,19 +170,21 @@ def knn_cross_validation(X_training, y_training, population):
     print(f"\033[1mPrediction time: {end_prediction - start_prediction} for population {population}\033[0m")
 
     # performance of test set
-    test_accuracy = accuracy_score(y_testing, y_test_pred)
-    print(f"Test Accuracy with k={best_k}: {test_accuracy:.4f}")
+    test_f1 = accuracy_score(y_testing, y_test_pred)
+    print(f"Test F1 Score with k={best_k}: {test_f1:.4f}")
 
     # plot scores per k neighbor
     plt.figure(figsize=(10, 6))
-    plt.plot(kNN_values, accuracy_results, marker='o', label='Accuracy')
-    # plt.plot(kNN_values, f1_results, marker='s', label='F1 Score')
+    # plt.plot(kNN_values, accuracy_results, marker='o', label='Accuracy')
+    plt.plot(kNN_values, f1_results, marker='s', label='F1 Score')
     plt.xlabel('Number of Neighbors (k)')
-    plt.ylabel('Cross-Validation Accuracy')
+    plt.ylabel('Cross-Validation F1 Score')
     if reduce:
         plt.title('5-Fold Cross-Validation Results for kNN on reduced population ' + population)
+        plt.savefig(f'kNN_reduced_{population}.png')
     else:
         plt.title('5-Fold Cross-Validation Results for kNN on population ' + population)
+        plt.savefig(f'kNN_{population}.png')
     plt.legend()
     plt.show()
 
