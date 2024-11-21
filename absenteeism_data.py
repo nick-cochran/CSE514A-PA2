@@ -13,14 +13,18 @@ absent_hours = df['Absenteeism time in hours']
 print(absent_hours)
 mode_hours = absent_hours.mode()
 print("Mode of Absenteeism time in hours:", mode_hours)
+median_hours = absent_hours.median()
+print("Median of Absenteeism time in hours:", median_hours)
+mean_hours = absent_hours.mean()
+print("Mean of Absenteeism time in hours:", mean_hours)
 
 # setting a threshold for >8 as excessive absence hours
-threshold = 8
+threshold = 3
 df['Absenteeism time in hours'] = df['Absenteeism time in hours'].apply(lambda x: 1 if x > threshold else 0)
 print(df.head())
 
 # save modified dataframe to CSV file
-# df.to_csv('Modified_Absenteeism_at_work.csv', index=False)
+df.to_csv('Modified_Absenteeism_at_work.csv', index=False)
 
 # separate 'Month' feature into 3 populations
 def categorical_month(month):
@@ -78,3 +82,4 @@ X_test_const = sm.add_constant(X_test)
 model_train = sm.OLS(y_train, X_train_const).fit()
 print(model_train.summary())
 print(f"\np-values: {model.pvalues}")
+
