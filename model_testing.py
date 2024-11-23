@@ -45,6 +45,7 @@ feature_labels = ['ID', 'Reason for absence', 'Day of the week', 'Seasons', 'Tra
                   'Hit target', 'Disciplinary failure', 'Education', 'Son', 'Social drinker',
                   'Social smoker', 'Pet', 'Weight', 'Height', 'Body mass index', 'Month Groups']
 
+# the features to use for the dataset
 reduced_feature_labels = ['Reason for absence', 'Day of the week', 'Seasons', 'Work load Average/day ',
                           'Disciplinary failure', 'Son', 'Social drinker', 'Pet', 'Body mass index', 'Month Groups']
 
@@ -62,11 +63,11 @@ if reduce:
     # population_A = population_A[reduced_feature_labels + ['Absenteeism time in hours']]
     # population_B = population_B[reduced_feature_labels + ['Absenteeism time in hours']]
     # population_C = population_C[reduced_feature_labels + ['Absenteeism time in hours']]
-
+    #
     # A_train, A_test = train_test_split(population_A, test_size=0.1, random_state=42)
     # B_train, B_test = train_test_split(population_B, test_size=0.1, random_state=42)
     # C_train, C_test = train_test_split(population_C, test_size=0.1, random_state=42)
-
+    #
     # A_train.to_csv('population_A_train_reduced.csv')
     # A_test.to_csv('population_A_test_reduced.csv')
     # B_train.to_csv('population_B_train_reduced.csv')
@@ -105,8 +106,10 @@ def svm_cross_validation(X_training, y_training, population):
     start_training = time.time()
     final_model = svm.SVC(kernel=best_kernel)
     final_model.fit(X_training, y_training)
+    y_training_pred = final_model.predict(X_training)
     end_training = time.time()
     print(f"\033[1mTraining time: {end_training - start_training} for population {population}\033[0m")
+    print(f"Training F1 Score with k={best_kernel}: {f1_score(y_training, y_training_pred):.4f}")
     start_prediction = time.time()
     y_test_pred = final_model.predict(X_testing)
     end_prediction = time.time()
@@ -163,8 +166,11 @@ def knn_cross_validation(X_training, y_training, population):
     start_training = time.time()
     final_model = KNeighborsClassifier(n_neighbors=best_k)
     final_model.fit(X_training, y_training)
+    print("training score", final_model.score(X_training, y_training))
+    y_training_pred = final_model.predict(X_training)
     end_training = time.time()
     print(f"\033[1mTraining time: {end_training - start_training} for population {population}\033[0m")
+    print(f"Training F1 Score with k={best_k}: {f1_score(y_training, y_training_pred):.4f}")
     start_prediction = time.time()
     y_test_pred = final_model.predict(X_testing)
     end_prediction = time.time()
@@ -219,8 +225,11 @@ def decision_tree_cross_validation(X_training, y_training, X_testing, y_testing,
     start_training = time.time()
     final_model = DecisionTreeClassifier(criterion=best_criterion)
     final_model.fit(X_training, y_training)
+    # print("training score", final_model.score(X_training, y_training))
+    y_training_pred = final_model.predict(X_training)
     end_training = time.time()
     print(f"\033[1mTraining time: {end_training - start_training} seconds for population {population}\033[0m")
+    print(f"Training F1 Score with best criterion ({best_criterion}): {f1_score(y_training, y_training_pred):.4f}")
 
     start_prediction = time.time()
     y_test_pred = final_model.predict(X_testing)
@@ -276,9 +285,11 @@ def random_forest_cross_validation(X_training, y_training, X_testing, y_testing,
     start_training = time.time()
     final_model = RandomForestClassifier(n_estimators=best_n)
     final_model.fit(X_training, y_training)
+    y_training_pred = final_model.predict(X_training)
+    # print("training score", final_model.score(X_training, y_training))
     end_training = time.time()
     print(f"\033[1mTraining time: {end_training - start_training} seconds for population {population}\033[0m")
-
+    print(f"Training F1 Score with best number of trees ({best_n}): {f1_score(y_training, y_training_pred):.4f}")
     start_prediction = time.time()
     y_test_pred = final_model.predict(X_testing)
     end_prediction = time.time()
@@ -312,8 +323,6 @@ def random_forest_cross_validation(X_training, y_training, X_testing, y_testing,
     # plt.show()
 
 
-# print("\033[1mKNN cross validation on Full Data\033[0m")
-# knn_cross_validation(X_training, y_training)
 
 print("\033[1mKNN cross validation on Population A\033[0m")
 knn_cross_validation(AX_train, Ay_train, 'A')
@@ -324,9 +333,6 @@ knn_cross_validation(BX_train, By_train, 'B')
 print("\033[1mKNN cross validation on Population C\033[0m")
 knn_cross_validation(CX_train, Cy_train, 'C')
 
-
-# print("\033[1mSVM cross validation on Full Data\033[0m")
-# svm_cross_validation(X_training, y_training)
 
 print("\033[1mSVM cross validation on Population A\033[0m")
 svm_cross_validation(AX_train, Ay_train, 'A')
